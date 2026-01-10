@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.saigor33.frameworks.statemachine": "file:../../StateMachine",
     "com.unity.2d.animation": "13.0.2",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.spriteshape": "13.0.0",

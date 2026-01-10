@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.saigor33.frameworks.statemachine": {
+      "version": "file:../../StateMachine",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "13.0.2",
       "depth": 0,
