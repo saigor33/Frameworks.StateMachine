@@ -1,0 +1,11 @@
+{
+  "name": "com.saigor33.frameworks.statemachine",
+  "version": "1.0.0",
+  "displayName": "Frameworks.StateMachine",
+  "unity": "2019.1",
+  "dependencies": {},
+  "author": {
+    "name": "saigor33",
+    "url": "https://github.com/saigor33"
+  }
+}
