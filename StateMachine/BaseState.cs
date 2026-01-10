@@ -1,4 +1,6 @@
-﻿namespace Frameworks.StateMachine
+﻿using System;
+
+namespace Frameworks.StateMachine
 {
     public abstract class BaseState<TState> where TState : BaseState<TState>
     {
