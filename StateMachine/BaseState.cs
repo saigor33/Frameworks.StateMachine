@@ -43,7 +43,7 @@ namespace Frameworks.StateMachine
         protected abstract void OnEnter();
         protected abstract void OnExit();
 
-        internal protected void OnAfterTransitionFinished() { }
+        internal protected virtual void OnAfterTransitionFinished() { }
 
         protected void Leave(BaseTransition<TState> transition)
         {
