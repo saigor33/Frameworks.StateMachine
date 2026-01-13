@@ -31,16 +31,32 @@ public class Test : MonoBehaviour
            .ToArray();
 
         Type selectedBaseStateType = typeof(Match.Logic.BaseState);
-        Type[] inheritSelectedBaseStateTypes = assemblyTypes
-           .Where(type => type.BaseType != null && type.BaseType == selectedBaseStateType).ToArray();
+        Type selectedTransitionType = typeof(Match.Logic.BaseTransition);
+        Type selectedTransitionWitchContextType = typeof(Match.Logic.BaseTransition<>);
 
+        Type[] inheritSelectedBaseStateTypes = GetInheritTypes(assemblyTypes, selectedBaseStateType);
 
-        AnalyzeCode(inheritSelectedBaseStateTypes);
+        Type[] inheritSelectedTransitionTypes = new[]
+            {
+                GetInheritTypes(assemblyTypes, selectedTransitionType),
+                GetInheritTypes(assemblyTypes, selectedTransitionWitchContextType)
+            }
+           .SelectMany(t => t)
+           .ToArray();
+
+        AnalyzeCode(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
         UnityEngine.Debug.Log($"#{UnityEngine.Time.frameCount}: Done");
     }
 
-    static void AnalyzeCode(Type[] inheritBaseStateTypes)
+    static Type[] GetInheritTypes(Type[] assemblyTypes, Type baseType)
+    {
+        return assemblyTypes
+           .Where(type => type.BaseType != null && type.BaseType == baseType)
+           .ToArray();
+    }
+
+    static void AnalyzeCode(Type[] inheritBaseStateTypes, Type[] inheritBaseTransitionTypes)
     {
         string rootDirectoryPath =
             @"C:\MyFolder\Projects\Frameworks\StateMachine\ExampleUnityProject\Assets\Scripts\Match";
@@ -53,13 +69,23 @@ public class Test : MonoBehaviour
         SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
         SyntaxNode syntaxRoot = syntaxTree.GetRoot();
 
-        Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationStateSourcesByState = inheritBaseStateTypes
-           .Select(t => compilation.GetTypeByMetadataName(t.FullName))
-           .ToDictionary(
-                symbol => symbol,
-                _ => new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default),
-                SymbolEqualityComparer.Default
-            );
+        Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationStateSourcesByState =
+            inheritBaseStateTypes
+               .Select(t => compilation.GetTypeByMetadataName(t.FullName))
+               .ToDictionary(
+                    symbol => symbol,
+                    _ => new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default),
+                    SymbolEqualityComparer.Default
+                );
+
+        Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationTransitionSourcesByTransition =
+            inheritBaseTransitionTypes
+               .Select(t => compilation.GetTypeByMetadataName(t.FullName))
+               .ToDictionary(
+                    symbol => symbol,
+                    _ => new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default),
+                    SymbolEqualityComparer.Default
+                );
 
         IEnumerable<ObjectCreationExpressionSyntax> objectCreationExpressionSyntaxes = syntaxRoot
            .DescendantNodes()
@@ -83,8 +109,18 @@ public class Test : MonoBehaviour
                 INamedTypeSymbol namedTypeSymbol = semanticModel.GetDeclaredSymbol(sourceClassDeclarationSyntax);
                 creationStateSources.Add(namedTypeSymbol);
             }
-            else if (false) { }
+            else if (creationTransitionSourcesByTransition.TryGetValue(typeInfoTypeSymbol,
+                out HashSet<INamedTypeSymbol> creationTransitionSources))
+            {
+                ClassDeclarationSyntax sourceClassDeclarationSyntax =
+                    GetClassDeclarationSyntax(objectCreationExpressionSyntax);
+                INamedTypeSymbol namedTypeSymbol = semanticModel.GetDeclaredSymbol(sourceClassDeclarationSyntax);
+                creationTransitionSources.Add(namedTypeSymbol);
+            }
         }
+
+        UnityEngine.Debug.Log($"#{UnityEngine.Time.frameCount}:test ");
+
     }
 
     static ClassDeclarationSyntax GetClassDeclarationSyntax(SyntaxNode syntaxNode)
