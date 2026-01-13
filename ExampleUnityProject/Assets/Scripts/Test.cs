@@ -39,7 +39,7 @@ public class Test : MonoBehaviour
         Type[] inheritSelectedTransitionTypes = new[]
             {
                 TypesHelpers.GetInheritTypes(assemblyTypes, selectedTransitionType),
-                TypesHelpers.GetInheritTypes(assemblyTypes, selectedTransitionWitchContextType)
+                TypesHelpers.GetInheritGenericTypes(assemblyTypes, selectedTransitionWitchContextType)
             }
            .SelectMany(t => t)
            .ToArray();
