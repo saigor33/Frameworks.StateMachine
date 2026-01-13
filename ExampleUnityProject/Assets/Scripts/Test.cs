@@ -40,7 +40,7 @@ public class Test : MonoBehaviour
            .SelectMany(t => t)
            .ToArray();
 
-        CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
+        CodeAnalyzer.Result result = CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
         UnityEngine.Debug.Log($"#{UnityEngine.Time.frameCount}: Done");
     }
