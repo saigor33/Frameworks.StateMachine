@@ -21,25 +21,25 @@ public class Test : MonoBehaviour
                .SelectMany(assembly => assembly.GetTypes()).ToArray();
         Type[] allAbstractClassTypes = assemblyTypes.Where(type => type.IsClass && type.IsAbstract).ToArray();
 
-        Type[] inheritBaseStateTypes = allAbstractClassTypes
-           .Where(abstractClassType => IsInheritType(abstractClassType, baseStateType))
-           .ToArray();
-
-        Type[] inheritTransitionTypes = allAbstractClassTypes
-           .Where(abstractClassType => IsInheritType(abstractClassType, baseTransitionType) ||
-                IsInheritType(abstractClassType, baseTransitionWithContextType))
+        Type[] inheritBaseStateTypes = TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseStateType);
+        Type[] inheritTransitionTypes = new[]
+            {
+                TypesHelpers.GetInheritGenericTypes(assemblyTypes, baseTransitionType),
+                TypesHelpers.GetInheritGenericTypes(assemblyTypes, baseTransitionWithContextType),
+            }
+           .SelectMany(t => t)
            .ToArray();
 
         Type selectedBaseStateType = typeof(Match.Logic.BaseState);
         Type selectedTransitionType = typeof(Match.Logic.BaseTransition);
         Type selectedTransitionWitchContextType = typeof(Match.Logic.BaseTransition<>);
 
-        Type[] inheritSelectedBaseStateTypes = GetInheritTypes(assemblyTypes, selectedBaseStateType);
+        Type[] inheritSelectedBaseStateTypes = TypesHelpers.GetInheritTypes(assemblyTypes, selectedBaseStateType);
 
         Type[] inheritSelectedTransitionTypes = new[]
             {
-                GetInheritTypes(assemblyTypes, selectedTransitionType),
-                GetInheritTypes(assemblyTypes, selectedTransitionWitchContextType)
+                TypesHelpers.GetInheritTypes(assemblyTypes, selectedTransitionType),
+                TypesHelpers.GetInheritTypes(assemblyTypes, selectedTransitionWitchContextType)
             }
            .SelectMany(t => t)
            .ToArray();
@@ -47,13 +47,6 @@ public class Test : MonoBehaviour
         AnalyzeCode(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
         UnityEngine.Debug.Log($"#{UnityEngine.Time.frameCount}: Done");
-    }
-
-    static Type[] GetInheritTypes(Type[] assemblyTypes, Type baseType)
-    {
-        return assemblyTypes
-           .Where(type => type.BaseType != null && type.BaseType == baseType)
-           .ToArray();
     }
 
     static void AnalyzeCode(Type[] inheritBaseStateTypes, Type[] inheritBaseTransitionTypes)
@@ -120,18 +113,10 @@ public class Test : MonoBehaviour
         }
 
         UnityEngine.Debug.Log($"#{UnityEngine.Time.frameCount}:test ");
-
     }
 
     static ClassDeclarationSyntax GetClassDeclarationSyntax(SyntaxNode syntaxNode)
     {
         return syntaxNode.Parent as ClassDeclarationSyntax ?? GetClassDeclarationSyntax(syntaxNode.Parent);
-    }
-
-    static bool IsInheritType(Type abstractClassType, Type baseStateType)
-    {
-        return abstractClassType.BaseType != null &&
-            abstractClassType.BaseType.IsGenericType &&
-            abstractClassType.BaseType.GetGenericTypeDefinition() == baseStateType;
     }
 }
