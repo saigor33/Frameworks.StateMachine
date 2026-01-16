@@ -172,8 +172,75 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                     return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
                 }));
 
+            StateGraphBuild.Build(codeAnalyzeResult);
+
             _sateGraphText = sateGraphText;
             _sateGraphWithTransitionsText = sateGraphText;
+        }
+    }
+
+    static class StateGraphBuild
+    {
+        public class Result
+        {
+            public string stateGraphGraphvizText;
+            public string stateGraphWithTransitionsGraphvizText;
+        }
+
+        public static Result Build(CodeAnalyzer.Result codeAnalyzer)
+        {
+            string commonSubname = GetCommonSubstring(codeAnalyzer.fromStateToTransitionByTransition);
+            commonSubname = GetCommonSubstring(codeAnalyzer.fromTransitionToStateByState, commonSubname);
+            commonSubname = GetCommonSubstring(codeAnalyzer.fromOtherSourceToTransitionByTransition, commonSubname);
+            commonSubname = GetCommonSubstring(codeAnalyzer.fromOtherSourceToStateByState, commonSubname);
+
+            // state to state graph
+            // state to transition graph
+
+            return new Result
+            {
+                stateGraphGraphvizText = "",
+                stateGraphWithTransitionsGraphvizText = ""
+            };
+        }
+
+        static string GetCommonSubstring(Dictionary<string, HashSet<string>> allSourceToSources,
+            string commonSubname = null)
+        {
+            foreach ((string fromSourceId, HashSet<string> toSourceIds) in allSourceToSources)
+            {
+                commonSubname = commonSubname == null
+                    ? fromSourceId
+                    : GetCommonSubstring(commonSubname, fromSourceId);
+
+                foreach (string toSourceId in toSourceIds)
+                {
+                    commonSubname = GetCommonSubstring(commonSubname, toSourceId);
+                }
+            }
+
+            return commonSubname;
+        }
+
+        static string GetCommonSubstring(string str1, string str2)
+        {
+            int? lastMatchSubstringIndex = null;
+            for (int i = 0; i < str1.Length; i++)
+            {
+                if (i >= str2.Length
+                    || str1[i] != str2[i])
+                {
+                    break;
+                }
+
+                lastMatchSubstringIndex = i;
+            }
+
+            int commonSubstringLenght = lastMatchSubstringIndex.HasValue
+                ? lastMatchSubstringIndex.Value + 1
+                : 0;
+
+            return str1.Substring(0, commonSubstringLenght);
         }
     }
 }
