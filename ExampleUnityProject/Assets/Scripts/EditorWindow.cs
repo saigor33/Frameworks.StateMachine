@@ -21,6 +21,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         string _sateGraphText;
         string _sateGraphWithTransitionsText;
         Vector2 _generationResultScrollPosition;
+        string _sourceCodeDirectoryPath;
 
         // [MenuItem("Tools/StateMachine/Visualization")]
         [MenuItem("Tools/StateMachineVisualization")]
@@ -61,26 +62,55 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         void OnGUI()
         {
             GUILayout.BeginVertical();
+            GUILayout.Space(5);
 
-            OnGuiDrawSelectionState();
+            DrawSelectFolderPath();
+
+            GUILayout.Space(5);
+
+            DrawSelectionState();
 
             // todo: add option "not all select transition"
-            // select path
             // select transition
             // select typed transition
+            GUILayout.Space(5);
+
             _needVisualizeTransitions = EditorGUILayout.Toggle("Need visualize transitions", _needVisualizeTransitions);
 
+            GUILayout.Space(5);
             if (GUILayout.Button("Generate"))
             {
                 GenerateGraphvizCode();
             }
 
-            OnGuiDrawGenerationResult();
+            GUILayout.Space(5);
+            DrawGenerationResult();
 
             GUILayout.EndVertical();
         }
 
-        void OnGuiDrawGenerationResult()
+        void DrawSelectFolderPath()
+        {
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Select source code directory");
+
+            if (GUILayout.Button("Select", GUILayout.Width(100)))
+            {
+                _sourceCodeDirectoryPath =
+                    EditorUtility.OpenFolderPanel("Select source code folder", Application.dataPath, "");
+            }
+
+            EditorGUI.BeginDisabledGroup(true);
+            GUILayout.TextField(_sourceCodeDirectoryPath, GUILayout.MinWidth(500), GUILayout.ExpandWidth(true));
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+        }
+
+        void DrawGenerationResult()
         {
             _generationResultScrollPosition = GUILayout.BeginScrollView(_generationResultScrollPosition
             );
@@ -101,7 +131,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.EndScrollView();
         }
 
-        void OnGuiDrawSelectionState()
+        void DrawSelectionState()
         {
             GUILayout.BeginHorizontal();
 
