@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -10,12 +11,14 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         class EnumOption
         {
             public int selectedIndex;
-            public string[] values;
+            public Type[] types;
+            public string[] typeFullNames;
         }
 
+        Type[] _assemblyTypes;
         bool _needVisualizeTransitions;
-        string[] _inheritBaseStateTypeFullNames;
         EnumOption _inheritBaseStateEnumOption;
+        string _graphvizText;
 
         // [MenuItem("Tools/StateMachine/Visualization")]
         [MenuItem("Tools/StateMachineVisualization")]
@@ -27,29 +30,45 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         void Awake()
         {
             Type baseStateType = typeof(BaseState<>);
-            Type baseTransitionType = typeof(BaseTransition<>);
+            Type baseTransitionType = typeof(BaseTransition<>); // remove select transition?
             Type baseTransitionWithContextType = typeof(BaseTransition<,>);
 
-            Type[] assemblyTypes = AppDomain.CurrentDomain.GetAssemblies()
+            Type[] assemblyTypes = AppDomain
+               .CurrentDomain
+               .GetAssemblies()
                .SelectMany(assembly => assembly.GetTypes())
                .ToArray();
             Type[] allAbstractClassTypes = assemblyTypes
                .Where(type => type.IsClass && type.IsAbstract)
                .ToArray();
 
+            _assemblyTypes = assemblyTypes;
+
+            Type[] inheritBaseStateTypes = TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseStateType);
             _inheritBaseStateEnumOption = new EnumOption
             {
                 selectedIndex = 0, // todo: array can be empty
-                values = TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseStateType)
-                   .Select(type => type.FullName)
+                types = inheritBaseStateTypes,
+                typeFullNames = inheritBaseStateTypes
+                   .Select(t => t.FullName)
                    .ToArray()
             };
         }
 
         void OnGUI()
         {
-            _inheritBaseStateEnumOption.selectedIndex =
-                EditorGUILayout.Popup(_inheritBaseStateEnumOption.selectedIndex, _inheritBaseStateEnumOption.values);
+            GUILayout.BeginVertical();
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("BaseState type");
+
+            _inheritBaseStateEnumOption.selectedIndex = EditorGUILayout.Popup(
+                _inheritBaseStateEnumOption.selectedIndex,
+                _inheritBaseStateEnumOption.typeFullNames
+            );
+
+            GUILayout.EndHorizontal();
 
             // todo: add option "not all select transition"
             // select state
@@ -60,12 +79,39 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             if (GUILayout.Button("Generate"))
             {
+                Type selectedBaseStateType =
+                    _inheritBaseStateEnumOption.types[_inheritBaseStateEnumOption.selectedIndex];
+                Type[] inheritSelectedBaseStateTypes =
+                    TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseStateType);
+
+                Type[] inheritSelectedTransitionTypes = new[]
+                    {
+                        TypesHelpers.GetInheritTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition)),
+                        TypesHelpers.GetInheritGenericTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition<>))
+                    }
+                   .SelectMany(t => t)
+                   .ToArray();
+
+                CodeAnalyzer.Result codeAnalyzeResult =
+                    CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
+
                 // generate text
+
+                _graphvizText = string.Join("\n",
+                    codeAnalyzeResult.fromStateToTransitionByTransition.Select(kv =>
+                    {
+                        (string transitionId, HashSet<string> stateIds) = kv;
+                        return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
+                    }));
             }
+
+            _graphvizText = GUILayout.TextArea(_graphvizText);
 
 
             // text field with transition
             // text field without transition
+
+            GUILayout.EndVertical();
         }
     }
 }
