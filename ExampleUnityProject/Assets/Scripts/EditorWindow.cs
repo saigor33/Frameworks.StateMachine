@@ -18,7 +18,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         Type[] _assemblyTypes;
         bool _needVisualizeTransitions;
         EnumOption _inheritBaseStateEnumOption;
-        string _graphvizText;
+        string _sateGraphText;
+        string _sateGraphWithTransitionsText;
+        Vector2 _generationResultScrollPosition;
 
         // [MenuItem("Tools/StateMachine/Visualization")]
         [MenuItem("Tools/StateMachineVisualization")]
@@ -53,12 +55,54 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                    .Select(t => t.FullName)
                    .ToArray()
             };
+            _needVisualizeTransitions = true;
         }
 
         void OnGUI()
         {
             GUILayout.BeginVertical();
 
+            OnGuiDrawSelectionState();
+
+            // todo: add option "not all select transition"
+            // select path
+            // select transition
+            // select typed transition
+            _needVisualizeTransitions = EditorGUILayout.Toggle("Need visualize transitions", _needVisualizeTransitions);
+
+            if (GUILayout.Button("Generate"))
+            {
+                GenerateGraphvizCode();
+            }
+
+            OnGuiDrawGenerationResult();
+
+            GUILayout.EndVertical();
+        }
+
+        void OnGuiDrawGenerationResult()
+        {
+            _generationResultScrollPosition = GUILayout.BeginScrollView(_generationResultScrollPosition
+            );
+
+            GUILayout.BeginHorizontal();
+
+            GUILayoutOption[] layoutOptions = { GUILayout.MaxWidth(maxSize.x / 2) };
+
+            _sateGraphText = GUILayout.TextArea(_sateGraphText, layoutOptions);
+
+            if (_needVisualizeTransitions)
+            {
+                _sateGraphWithTransitionsText = GUILayout.TextArea(_sateGraphWithTransitionsText, layoutOptions);
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndScrollView();
+        }
+
+        void OnGuiDrawSelectionState()
+        {
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("BaseState type");
@@ -69,49 +113,37 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             );
 
             GUILayout.EndHorizontal();
+        }
 
-            // todo: add option "not all select transition"
-            // select state
-            // select transition
-            // select typed transition
-            _needVisualizeTransitions = EditorGUILayout.Toggle("Need visualize transitions", _needVisualizeTransitions);
+        void GenerateGraphvizCode()
+        {
+            Type selectedBaseStateType =
+                _inheritBaseStateEnumOption.types[_inheritBaseStateEnumOption.selectedIndex];
+            Type[] inheritSelectedBaseStateTypes =
+                TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseStateType);
 
+            Type[] inheritSelectedTransitionTypes = new[]
+                {
+                    TypesHelpers.GetInheritTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition)),
+                    TypesHelpers.GetInheritGenericTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition<>))
+                }
+               .SelectMany(t => t)
+               .ToArray();
 
-            if (GUILayout.Button("Generate"))
-            {
-                Type selectedBaseStateType =
-                    _inheritBaseStateEnumOption.types[_inheritBaseStateEnumOption.selectedIndex];
-                Type[] inheritSelectedBaseStateTypes =
-                    TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseStateType);
+            CodeAnalyzer.Result codeAnalyzeResult =
+                CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
-                Type[] inheritSelectedTransitionTypes = new[]
-                    {
-                        TypesHelpers.GetInheritTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition)),
-                        TypesHelpers.GetInheritGenericTypes(_assemblyTypes, typeof(Match.Logic.BaseTransition<>))
-                    }
-                   .SelectMany(t => t)
-                   .ToArray();
+            // generate text
 
-                CodeAnalyzer.Result codeAnalyzeResult =
-                    CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
+            string sateGraphText = string.Join("\n",
+                codeAnalyzeResult.fromStateToTransitionByTransition.Select(kv =>
+                {
+                    (string transitionId, HashSet<string> stateIds) = kv;
+                    return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
+                }));
 
-                // generate text
-
-                _graphvizText = string.Join("\n",
-                    codeAnalyzeResult.fromStateToTransitionByTransition.Select(kv =>
-                    {
-                        (string transitionId, HashSet<string> stateIds) = kv;
-                        return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
-                    }));
-            }
-
-            _graphvizText = GUILayout.TextArea(_graphvizText);
-
-
-            // text field with transition
-            // text field without transition
-
-            GUILayout.EndVertical();
+            _sateGraphText = sateGraphText;
+            _sateGraphWithTransitionsText = sateGraphText;
         }
     }
 }
