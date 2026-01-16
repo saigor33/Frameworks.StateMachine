@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GetWindow<EditorWindow>();
         }
 
-        void Awake()
+        void OnEnable()
         {
             Type baseStateType = typeof(BaseState<>);
             Type baseTransitionType = typeof(BaseTransition<>); // remove select transition?
@@ -172,10 +173,81 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                     return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
                 }));
 
-            StateGraphBuild.Build(codeAnalyzeResult);
+            StateGraphBuild.Result stateGraphResult = StateGraphBuild.Build(codeAnalyzeResult);
 
             _sateGraphText = sateGraphText;
-            _sateGraphWithTransitionsText = sateGraphText;
+            _sateGraphWithTransitionsText = stateGraphResult.stateGraphWithTransitionsGraphvizText;
+        }
+    }
+
+    static class GraphvizFormater
+    {
+        public static class ShapeType
+        {
+            public const string Rect = "rect";
+            public const string Ellipse = "ellipse";
+        }
+
+        public static class Color
+        {
+            public const string Lightgrey = "lightgrey";
+            public const string White = "white";
+        }
+
+        public static class Style
+        {
+            public const string Filled = "filled";
+        }
+
+        public static string FormatDigraph(string id, string label, string nodes)
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("digraph G");
+            stringBuilder.AppendLine("{");
+            stringBuilder.AppendLine(FormateLineIndentation($"label = \"{label}\""));
+            stringBuilder.AppendLine(FormateLineIndentation(nodes));
+            stringBuilder.AppendLine("}");
+
+            return stringBuilder.ToString();
+        }
+
+        public static string FormatSubgraph(string label, string nodes, string style = Style.Filled,
+            string color = Color.Lightgrey)
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine($"subgraph cluster_{label}");
+            stringBuilder.AppendLine("{");
+            stringBuilder.AppendLine(FormateLineIndentation($"style={style}"));
+            stringBuilder.AppendLine(FormateLineIndentation($"color={color}"));
+            stringBuilder.AppendLine(FormateLineIndentation($"label={label}"));
+            stringBuilder.AppendLine(FormateLineIndentation(nodes));
+            stringBuilder.AppendLine("}");
+
+            return stringBuilder.ToString();
+
+            // subgraph cluster_0 {
+            //     style=filled;
+            //     color=lightgrey;
+            //     node [style=filled,color=white];
+            //     a0 -> a1 -> a2 -> a3;
+            //     label = "process #1";
+            // }
+        }
+
+        public static string FormatNode(string nodeId, string nodeLabel, string shapeType = ShapeType.Ellipse,
+            string color = Color.White, string style = Style.Filled)
+        {
+            return $"\"{nodeId}\" [label=\"{nodeLabel}\" shape=\"{shapeType}\" color=\"{color}\" style=\"{style}\"]";
+        }
+
+        public static string JoinNodes(string fromNodeId, string toNodeId)
+        {
+            return $"\"{fromNodeId}\" -> \"{toNodeId}\"";
+        }
+
+        static string FormateLineIndentation(string text)
+        {
+            return $"\t{text.Replace("\n", "\n\t")}";
         }
     }
 
@@ -197,11 +269,111 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             // state to state graph
             // state to transition graph
 
+            var stringBuilder = new StringBuilder();
+
+            var fromStateToTransitionByState = new Dictionary<string, HashSet<string>>();
+            foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
+            {
+                foreach (string stateId in stateIds)
+                {
+                    if (fromStateToTransitionByState.ContainsKey(stateId))
+                    {
+                        fromStateToTransitionByState[stateId]
+                           .Add(transitionId);
+                    }
+                    else
+                    {
+                        fromStateToTransitionByState.Add(stateId, new HashSet<string>(new[] { transitionId }));
+                    }
+                }
+            }
+
+            foreach ((string stateId, HashSet<string> transitionIds) in fromStateToTransitionByState)
+            {
+                var stateStringBuild = new StringBuilder();
+
+                stateStringBuild.AppendLine(GraphvizFormater.FormatNode(stateId, "State"));
+
+                foreach (string transitionId in transitionIds)
+                {
+                    stateStringBuild.AppendLine(
+                        GraphvizFormater.FormatNode(transitionId,
+                            nodeLabel: GetSourceName(transitionId),
+                            shapeType: GraphvizFormater.ShapeType.Rect)
+                    );
+
+                    stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
+                }
+
+                stringBuilder.AppendLine(GraphvizFormater.FormatSubgraph(GetSourceName(stateId),
+                    $"{stateStringBuild}"));
+            }
+
+            // foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
+            // {
+            //     var stateStringBuild = new StringBuilder();
+            //
+            //     stateStringBuild.AppendLine(GraphvizFormater.FormatNode(transitionId,
+            //         GetSourceName(transitionId),
+            //         GraphvizFormater.ShapeType.Rect));
+            //
+            //     foreach (string stateId in stateIds)
+            //     {
+            //         stateStringBuild.AppendLine(GraphvizFormater.FormatNode(stateId,
+            //             GetSourceName("State"),
+            //             GraphvizFormater.ShapeType.Rect));
+            //
+            //         stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
+            //     }
+            //
+            //     GraphvizFormater.FormatSubgraph(GetSourceName(transitionId), $"{stateStringBuild}");
+            // }
+
+            // foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzer.fromTransitionToStateByState)
+            // {
+            //     stringBuilder.AppendLine(GraphvizFormater.FormatNode(stateId, GetSourceName(stateId)));
+            //
+            //     foreach (string transitionId in transitionIds)
+            //     {
+            //         // stringBuilder.AppendLine(GraphvizFormater.FormatNode(transitionId, GetSourceName(transitionId)));
+            //         stringBuilder.AppendLine(GraphvizFormater.JoinNodes(transitionId, stateId));
+            //     }
+            // }
+            //
+            // foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
+            // {
+            //     var stateStringBuild = new StringBuilder();
+            //
+            //     stateStringBuild.AppendLine(GraphvizFormater.FormatNode(transitionId,
+            //         GetSourceName(transitionId),
+            //         GraphvizFormater.ShapeType.Rect));
+            //
+            //     foreach (string stateId in stateIds)
+            //     {
+            //         stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
+            //     }
+            //
+            //     GraphvizFormater.FormatSubgraph(GetSourceName(transitionId), $"{stateStringBuild}");
+            // }
+
             return new Result
             {
                 stateGraphGraphvizText = "",
-                stateGraphWithTransitionsGraphvizText = ""
+                stateGraphWithTransitionsGraphvizText =
+                    GraphvizFormater.FormatDigraph("Root", "", stringBuilder.ToString())
             };
+        }
+
+        static string GetSourceName(string sourceId)
+        {
+            int lastIndexOf = sourceId.LastIndexOf('.');
+
+            if (lastIndexOf == -1)
+            {
+                return sourceId;
+            }
+
+            return sourceId.Substring(lastIndexOf + 1);
         }
 
         static string GetCommonSubstring(Dictionary<string, HashSet<string>> allSourceToSources,
