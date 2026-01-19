@@ -163,6 +163,16 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             CodeAnalyzer.Result codeAnalyzeResult =
                 CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
+            HashSet<string> allSourceIds = new Dictionary<string, HashSet<string>>()
+               .Concat(codeAnalyzeResult.fromStateToTransitionByTransition)
+               .Concat(codeAnalyzeResult.fromTransitionToStateByState)
+               .Concat(codeAnalyzeResult.fromOtherSourceToTransitionByTransition)
+               .Concat(codeAnalyzeResult.fromOtherSourceToStateByState)
+               .SelectMany(kv => new HashSet<string>(kv.Value.Union(new[] { kv.Key })))
+               .ToHashSet();
+
+            string stateGraphName = CommonSubstringFinder.GetCommonSubstring(allSourceIds);
+
             GraphvizStateGraphGenerator.Result stateGraphResult = GraphvizStateGraphGenerator.Build(codeAnalyzeResult);
 
             _sateGraphText = stateGraphResult.stateGraphText;
