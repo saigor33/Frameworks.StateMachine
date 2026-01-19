@@ -281,8 +281,10 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
+            var createdTransitionIds = new HashSet<string>();
             foreach ((string stateId, HashSet<string> transitionIds) in fromStateToTransitionByState)
             {
+                createdTransitionIds.UnionWith(transitionIds);
                 stringBuilder.AppendLine(CreateStateWithTransitionsNode(stateId, transitionIds));
             }
 
@@ -291,12 +293,21 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 bool isStateNodeCreated = fromStateToTransitionByState.ContainsKey(stateId);
                 if (!isStateNodeCreated)
                 {
-                    string emptyStateNode =
+                    string notUsedStateNode =
                         CreateStateWithTransitionsNode(stateId, transitionIds: new HashSet<string>());
-                    stringBuilder.AppendLine(emptyStateNode);
+                    stringBuilder.AppendLine(notUsedStateNode);
                 }
             }
 
+            foreach (string transitionId in codeAnalyzer.transitions)
+            {
+                bool isTransitionNodeCreated = createdTransitionIds.Contains(transitionId);
+                if (!isTransitionNodeCreated)
+                {
+                    string notUsedTransitionNode = CreateTransitionNode(transitionId, GraphvizFormater.Color.Yellow);
+                    stringBuilder.AppendLine(notUsedTransitionNode);
+                }
+            }
 
             foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzer.fromTransitionToStateByState)
             {
@@ -305,7 +316,6 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                     stringBuilder.AppendLine(GraphvizFormater.JoinNodes(transitionId, stateId));
                 }
             }
-
 
             HashSet<string> allOtherSourceIds = new Dictionary<string, HashSet<string>>()
                .Concat(codeAnalyzer.fromOtherSourceToStateByState)
@@ -340,54 +350,6 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-
-            // foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
-            // {
-            //     var stateStringBuild = new StringBuilder();
-            //
-            //     stateStringBuild.AppendLine(GraphvizFormater.FormatNode(transitionId,
-            //         GetSourceName(transitionId),
-            //         GraphvizFormater.ShapeType.Rect));
-            //
-            //     foreach (string stateId in stateIds)
-            //     {
-            //         stateStringBuild.AppendLine(GraphvizFormater.FormatNode(stateId,
-            //             GetSourceName("State"),
-            //             GraphvizFormater.ShapeType.Rect));
-            //
-            //         stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
-            //     }
-            //
-            //     GraphvizFormater.FormatSubgraph(GetSourceName(transitionId), $"{stateStringBuild}");
-            // }
-
-            // foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzer.fromTransitionToStateByState)
-            // {
-            //     stringBuilder.AppendLine(GraphvizFormater.FormatNode(stateId, GetSourceName(stateId)));
-            //
-            //     foreach (string transitionId in transitionIds)
-            //     {
-            //         // stringBuilder.AppendLine(GraphvizFormater.FormatNode(transitionId, GetSourceName(transitionId)));
-            //         stringBuilder.AppendLine(GraphvizFormater.JoinNodes(transitionId, stateId));
-            //     }
-            // }
-            //
-            // foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
-            // {
-            //     var stateStringBuild = new StringBuilder();
-            //
-            //     stateStringBuild.AppendLine(GraphvizFormater.FormatNode(transitionId,
-            //         GetSourceName(transitionId),
-            //         GraphvizFormater.ShapeType.Rect));
-            //
-            //     foreach (string stateId in stateIds)
-            //     {
-            //         stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
-            //     }
-            //
-            //     GraphvizFormater.FormatSubgraph(GetSourceName(transitionId), $"{stateStringBuild}");
-            // }
-
             return new Result
             {
                 stateGraphGraphvizText = "",
@@ -404,16 +366,19 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             foreach (string transitionId in transitionIds)
             {
-                stateStringBuild.AppendLine(
-                    GraphvizFormater.FormatNode(transitionId,
-                        nodeLabel: GetSourceName(transitionId),
-                        shapeType: GraphvizFormater.ShapeType.Rect)
-                );
-
+                stateStringBuild.AppendLine(CreateTransitionNode(transitionId));
                 stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
             }
 
             return GraphvizFormater.FormatSubgraph(GetSourceName(stateId), nodes: $"{stateStringBuild}");
+        }
+
+        static string CreateTransitionNode(string transitionId, string color = GraphvizFormater.Color.White)
+        {
+            return GraphvizFormater.FormatNode(transitionId,
+                nodeLabel: GetSourceName(transitionId),
+                color: color,
+                shapeType: GraphvizFormater.ShapeType.Rect);
         }
 
         static string GetSourceName(string sourceId)
