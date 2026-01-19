@@ -16,6 +16,12 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             public string[] typeFullNames;
         }
 
+        static readonly string[] VisualEditorsToShowingUrls =
+        {
+            "https://www.devtoolsdaily.com/graphviz",
+            "https://graph.flyte.org"
+        };
+
         Type[] _assemblyTypes;
         bool _needVisualizeTransitions;
         EnumOption _inheritBaseStateEnumOption;
@@ -121,6 +127,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.Space(5);
             DrawGenerationResult();
 
+            GUILayout.Space(5);
+            DrawVisualEditorsToShowing();
+
             GUILayout.EndVertical();
         }
 
@@ -143,6 +152,28 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
+        }
+
+        void DrawVisualEditorsToShowing()
+        {
+            GUILayout.BeginVertical();
+
+            GUILayout.Label("Visual editors to showing graphviz code:");
+
+            foreach (string visualEditorsToShowingUrl in VisualEditorsToShowingUrls)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(visualEditorsToShowingUrl, GUILayout.Width(250));
+                if (GUILayout.Button("Open", GUILayout.Width(50)))
+                {
+                    Application.OpenURL(visualEditorsToShowingUrl);
+                }
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndVertical();
         }
 
         void DrawGenerationResult()
