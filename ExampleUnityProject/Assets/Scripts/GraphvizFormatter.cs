@@ -36,7 +36,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         }
 
         public static string FormatSubgraph(string id, string label, string nodes, string style = Style.Filled,
-            string color = Color.Lightgrey)
+            string color = Color.White)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"subgraph cluster_{id}");

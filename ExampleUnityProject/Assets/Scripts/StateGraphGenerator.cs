@@ -23,6 +23,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
                 stringBuilder.AppendLine(
                     GraphvizFormatter.FormatNode(
                         nodeId: stateId,
+                        color: GraphvizFormatter.Color.Lightgrey,
                         nodeLabel: SourceNameHelper.GetSourceName(stateId)
                     )
                 );

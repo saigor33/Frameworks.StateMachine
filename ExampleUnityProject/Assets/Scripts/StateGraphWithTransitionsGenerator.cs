@@ -130,6 +130,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
             return GraphvizFormatter.FormatSubgraph(
                 id: stateName,
                 label: stateName,
+                color: GraphvizFormatter.Color.Lightgrey,
                 nodes: $"{stateStringBuild}"
             );
         }
