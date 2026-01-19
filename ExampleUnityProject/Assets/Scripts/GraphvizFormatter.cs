@@ -28,7 +28,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("digraph G");
             stringBuilder.AppendLine("{");
-            stringBuilder.AppendLine(FormatLineIndentation($"label = \"{label}\""));
+            stringBuilder.AppendLine(FormatLineIndentation($"label=\"{label}\""));
             stringBuilder.AppendLine(FormatLineIndentation(nodes));
             stringBuilder.AppendLine("}");
 
@@ -41,9 +41,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"subgraph cluster_{id}");
             stringBuilder.AppendLine("{");
-            stringBuilder.AppendLine(FormatLineIndentation($"style={style}"));
-            stringBuilder.AppendLine(FormatLineIndentation($"color={color}"));
-            stringBuilder.AppendLine(FormatLineIndentation($"label={label}"));
+            stringBuilder.AppendLine(FormatLineIndentation($"style=\"{style}\""));
+            stringBuilder.AppendLine(FormatLineIndentation($"color=\"{color}\""));
+            stringBuilder.AppendLine(FormatLineIndentation($"label=\"{label}\""));
             stringBuilder.AppendLine(FormatLineIndentation(nodes));
             stringBuilder.AppendLine("}");
 
