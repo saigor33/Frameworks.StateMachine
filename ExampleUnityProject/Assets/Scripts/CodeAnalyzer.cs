@@ -80,7 +80,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             Func<ISymbol, bool> allSymbolSourcesFilter)
         {
             return targetSymbols
-               .ToDictionary(stateSymbol => stateSymbol,
+               .ToDictionary(targetSymbol => targetSymbol,
                     stateSymbol => allSymbolSourcesByTargetSymbol[stateSymbol]
                        .Where(s => allSymbolSourcesFilter(s))
                        .ToHashSet(SymbolEqualityComparer.Default),
