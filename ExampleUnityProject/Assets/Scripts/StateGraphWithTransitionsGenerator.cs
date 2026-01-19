@@ -6,12 +6,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
 {
     static class StateGraphWithTransitionsGenerator
     {
-        public class Result
-        {
-            public string stateGraphWithTransitionsText;
-        }
-
-        public static Result Generate(CodeAnalyzer.Result codeAnalyzeResult)
+        public static string Generate(CodeAnalyzer.Result codeAnalyzeResult)
         {
             HashSet<string> stateIds = codeAnalyzeResult.states;
             HashSet<string> transitionIds = codeAnalyzeResult.transitions;
@@ -113,11 +108,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
                 }
             }
 
-            return new Result
-            {
-                stateGraphWithTransitionsText =
-                    GraphvizFormatter.FormatDigraph("Root", "", stringBuilder.ToString())
-            };
+            return GraphvizFormatter.FormatDigraph("Root", "", stringBuilder.ToString());
         }
 
         static string CreateStateWithTransitionsNode(string stateId, HashSet<string> transitionIds)
