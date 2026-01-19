@@ -12,6 +12,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
     {
         public class Result
         {
+            public HashSet<string> states;
+            public HashSet<string> transitions;
             public Dictionary<string, HashSet<string>> fromTransitionToStateByState;
             public Dictionary<string, HashSet<string>> fromOtherSourceToStateByState;
             public Dictionary<string, HashSet<string>> fromStateToTransitionByTransition;
@@ -68,6 +70,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             return new Result
             {
+                states = ConvertSymbolsToNames(stateSymbols),
+                transitions = ConvertSymbolsToNames(transitionSymbols),
                 fromTransitionToStateByState = ConvertSymbolsToNames(fromTransitionToStateByState),
                 fromOtherSourceToStateByState = ConvertSymbolsToNames(fromOtherSourceToStateByState),
                 fromStateToTransitionByTransition = ConvertSymbolsToNames(fromStateToTransitionByTransition),
@@ -90,11 +94,21 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         static Dictionary<string, HashSet<string>> ConvertSymbolsToNames(Dictionary<ISymbol, HashSet<ISymbol>> source)
         {
             return source.ToDictionary(
-                kv => kv.Key.ToDisplayString(),
-                kv =>
-                    kv.Value
-                       .Select(s => s.ToDisplayString())
-                       .ToHashSet());
+                kv => GetSymbolName(kv.Key),
+                kv => ConvertSymbolsToNames(kv.Value)
+            );
+        }
+
+        static HashSet<string> ConvertSymbolsToNames(HashSet<ISymbol> symbols)
+        {
+            return symbols
+               .Select(GetSymbolName)
+               .ToHashSet();
+        }
+
+        static string GetSymbolName(ISymbol symbol)
+        {
+            return symbol.ToDisplayString();
         }
 
         static Dictionary<ISymbol, HashSet<INamedTypeSymbol>> GetCreationSymbolSourcesBySymbol(
