@@ -179,7 +179,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             string stateGraphDescription = $"FeatureName: {stateGraphName}";
 
             _sateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult, stateGraphDescription);
-            _sateGraphWithTransitionsText = Graphviz.StateGraphWithTransitionsGenerator.Generate(codeAnalyzeResult);
+            _sateGraphWithTransitionsText =
+                Graphviz.StateGraphWithTransitionsGenerator.Generate(codeAnalyzeResult, stateGraphDescription);
         }
     }
 }
