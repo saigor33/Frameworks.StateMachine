@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Frameworks.StateMachine.StateGraphVisualizer
+namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
 {
-    static class GraphvizStateGraphGenerator
+    static class StateGraphWithTransitionsGenerator
     {
         public class Result
         {
             public string stateGraphWithTransitionsText;
         }
 
-        public static Result Build(CodeAnalyzer.Result codeAnalyzeResult)
+        public static Result Generate(CodeAnalyzer.Result codeAnalyzeResult)
         {
             HashSet<string> stateIds = codeAnalyzeResult.states;
             HashSet<string> transitionIds = codeAnalyzeResult.transitions;

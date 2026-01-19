@@ -112,7 +112,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
         void DrawGenerationResult()
         {
-            _generationResultScrollPosition = GUILayout.BeginScrollView(_generationResultScrollPosition
+            _generationResultScrollPosition = GUILayout.BeginScrollView(
+                _generationResultScrollPosition
             );
 
             GUILayout.BeginHorizontal();
@@ -177,7 +178,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             string stateGraphDescription = $"FeatureName: {stateGraphName}";
 
-            GraphvizStateGraphGenerator.Result stateGraphResult = GraphvizStateGraphGenerator.Build(codeAnalyzeResult);
+            Graphviz.StateGraphWithTransitionsGenerator.Result stateGraphResult =
+                Graphviz.StateGraphWithTransitionsGenerator.Generate(codeAnalyzeResult);
 
             _sateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult, stateGraphDescription);
             _sateGraphWithTransitionsText = stateGraphResult.stateGraphWithTransitionsText;
