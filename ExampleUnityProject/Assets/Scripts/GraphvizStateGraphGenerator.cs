@@ -14,7 +14,6 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
         public static Result Build(CodeAnalyzer.Result codeAnalyzeResult)
         {
-
             var fromStateToTransitionByState = new Dictionary<string, HashSet<string>>();
             foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzeResult
                .fromStateToTransitionByTransition)
@@ -106,7 +105,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             return new Result
             {
-                stateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult),
+                stateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult, "TODO"),
                 stateGraphWithTransitionsText =
                     GraphvizFormatter.FormatDigraph("Root", "", stringBuilder.ToString())
             };
@@ -124,8 +123,13 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 stateStringBuild.AppendLine(GraphvizFormatter.JoinNodes(stateId, transitionId));
             }
 
-            return GraphvizFormatter.FormatSubgraph(SourceNameHelper.GetSourceName(stateId),
-                nodes: $"{stateStringBuild}");
+            string stateName = SourceNameHelper.GetSourceName(stateId);
+
+            return GraphvizFormatter.FormatSubgraph(
+                id: stateName,
+                label: stateName,
+                nodes: $"{stateStringBuild}"
+            );
         }
 
         static string CreateTransitionNode(string transitionId, string color = GraphvizFormatter.Color.White)

@@ -35,11 +35,11 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             return stringBuilder.ToString();
         }
 
-        public static string FormatSubgraph(string label, string nodes, string style = Style.Filled,
+        public static string FormatSubgraph(string id, string label, string nodes, string style = Style.Filled,
             string color = Color.Lightgrey)
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"subgraph cluster_{label}");
+            stringBuilder.AppendLine($"subgraph cluster_{id}");
             stringBuilder.AppendLine("{");
             stringBuilder.AppendLine(FormatLineIndentation($"style={style}"));
             stringBuilder.AppendLine(FormatLineIndentation($"color={color}"));

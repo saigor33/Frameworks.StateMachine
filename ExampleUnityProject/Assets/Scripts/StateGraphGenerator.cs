@@ -6,7 +6,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
 {
     static class StateGraphGenerator
     {
-        public static string GenerateStateGraph(CodeAnalyzer.Result codeAnalyzeResult)
+        public static string GenerateStateGraph(CodeAnalyzer.Result codeAnalyzeResult, string label)
         {
             HashSet<string> stateIds = codeAnalyzeResult.states;
             Dictionary<string, HashSet<string>> fromTransitionToStateByState =
@@ -68,7 +68,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
                 }
             }
 
-            return GraphvizFormatter.FormatDigraph("Root", "", $"{stringBuilder}");
+            string withTitleContainerNode =
+                GraphvizFormatter.FormatSubgraph("Container", label, nodes: $"{stringBuilder}");
+            return GraphvizFormatter.FormatDigraph(id: "Root", "", withTitleContainerNode);
         }
     }
 }

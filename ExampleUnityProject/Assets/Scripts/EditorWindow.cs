@@ -171,11 +171,15 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                .SelectMany(kv => new HashSet<string>(kv.Value.Union(new[] { kv.Key })))
                .ToHashSet();
 
-            string stateGraphName = CommonSubstringFinder.GetCommonSubstring(allSourceIds);
+            string stateGraphName = CommonSubstringFinder
+               .GetCommonSubstring(allSourceIds)
+               .TrimEnd('.');
+
+            string stateGraphDescription = $"FeatureName: {stateGraphName}";
 
             GraphvizStateGraphGenerator.Result stateGraphResult = GraphvizStateGraphGenerator.Build(codeAnalyzeResult);
 
-            _sateGraphText = stateGraphResult.stateGraphText;
+            _sateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult, stateGraphDescription);
             _sateGraphWithTransitionsText = stateGraphResult.stateGraphWithTransitionsText;
         }
     }
