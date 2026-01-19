@@ -8,25 +8,34 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
     {
         public class Result
         {
-            public string stateGraphText;
             public string stateGraphWithTransitionsText;
         }
 
         public static Result Build(CodeAnalyzer.Result codeAnalyzeResult)
         {
+            HashSet<string> stateIds = codeAnalyzeResult.states;
+            HashSet<string> transitionIds = codeAnalyzeResult.transitions;
+            Dictionary<string, HashSet<string>> fromStateToTransitionByTransition = codeAnalyzeResult
+               .fromStateToTransitionByTransition;
+            Dictionary<string, HashSet<string>> fromOtherSourceToTransitionByTransition = codeAnalyzeResult
+               .fromOtherSourceToTransitionByTransition;
+            Dictionary<string, HashSet<string>> fromTransitionToStateByState =
+                codeAnalyzeResult.fromTransitionToStateByState;
+            Dictionary<string, HashSet<string>> fromOtherSourceToStateByState =
+                codeAnalyzeResult.fromOtherSourceToStateByState;
+
             var fromStateToTransitionByState = new Dictionary<string, HashSet<string>>();
-            foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzeResult
-               .fromStateToTransitionByTransition)
+            foreach ((string toTransitionId, HashSet<string> fromStateIds) in fromStateToTransitionByTransition)
             {
-                foreach (string stateId in stateIds)
+                foreach (string fromStateId in fromStateIds)
                 {
-                    if (fromStateToTransitionByState.TryGetValue(stateId, out HashSet<string> value))
+                    if (fromStateToTransitionByState.TryGetValue(fromStateId, out HashSet<string> value))
                     {
-                        value.Add(transitionId);
+                        value.Add(toTransitionId);
                     }
                     else
                     {
-                        fromStateToTransitionByState.Add(stateId, new HashSet<string>(new[] { transitionId }));
+                        fromStateToTransitionByState.Add(fromStateId, new HashSet<string>(new[] { toTransitionId }));
                     }
                 }
             }
@@ -34,13 +43,13 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             var stringBuilder = new StringBuilder();
 
             var createdTransitionIds = new HashSet<string>();
-            foreach ((string stateId, HashSet<string> transitionIds) in fromStateToTransitionByState)
+            foreach ((string fromStateId, HashSet<string> toTransitionIds) in fromStateToTransitionByState)
             {
-                createdTransitionIds.UnionWith(transitionIds);
-                stringBuilder.AppendLine(CreateStateWithTransitionsNode(stateId, transitionIds));
+                createdTransitionIds.UnionWith(toTransitionIds);
+                stringBuilder.AppendLine(CreateStateWithTransitionsNode(fromStateId, toTransitionIds));
             }
 
-            foreach (string stateId in codeAnalyzeResult.states)
+            foreach (string stateId in stateIds)
             {
                 bool isStateNodeCreated = fromStateToTransitionByState.ContainsKey(stateId);
                 if (!isStateNodeCreated)
@@ -51,7 +60,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-            foreach (string transitionId in codeAnalyzeResult.transitions)
+            foreach (string transitionId in transitionIds)
             {
                 bool isTransitionNodeCreated = createdTransitionIds.Contains(transitionId);
                 if (!isTransitionNodeCreated)
@@ -61,17 +70,17 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-            foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzeResult.fromTransitionToStateByState)
+            foreach ((string toStateId, HashSet<string> fromTransitionIds) in fromTransitionToStateByState)
             {
-                foreach (string transitionId in transitionIds)
+                foreach (string fromTransitionId in fromTransitionIds)
                 {
-                    stringBuilder.AppendLine(GraphvizFormatter.JoinNodes(transitionId, stateId));
+                    stringBuilder.AppendLine(GraphvizFormatter.JoinNodes(fromTransitionId, toStateId));
                 }
             }
 
             HashSet<string> allOtherSourceIds = new Dictionary<string, HashSet<string>>()
-               .Concat(codeAnalyzeResult.fromOtherSourceToStateByState)
-               .Concat(codeAnalyzeResult.fromOtherSourceToTransitionByTransition)
+               .Concat(fromOtherSourceToStateByState)
+               .Concat(fromOtherSourceToTransitionByTransition)
                .SelectMany(kv => kv.Value)
                .ToHashSet();
 
@@ -82,30 +91,30 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                         nodeId: otherSourceId,
                         nodeLabel: SourceNameHelper.GetSourceName(otherSourceId),
                         color: GraphvizFormatter.Color.Yellow
-                    ));
+                    )
+                );
             }
 
-            foreach ((string stateId, HashSet<string> otherSourceIds) in
-                codeAnalyzeResult.fromOtherSourceToStateByState)
+            foreach ((string toStateId, HashSet<string> fromOtherSourceIds) in
+                fromOtherSourceToStateByState)
             {
-                foreach (string otherSourceId in otherSourceIds)
+                foreach (string fromOtherSourceId in fromOtherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormatter.JoinNodes(otherSourceId, stateId));
+                    stringBuilder.Append(GraphvizFormatter.JoinNodes(fromOtherSourceId, toStateId));
                 }
             }
 
-            foreach ((string transitionId, HashSet<string> otherSourceIds) in codeAnalyzeResult
-               .fromOtherSourceToTransitionByTransition)
+            foreach ((string toTransitionId, HashSet<string> fromOtherSourceIds) in
+                fromOtherSourceToTransitionByTransition)
             {
-                foreach (string otherSourceId in otherSourceIds)
+                foreach (string fromOtherSourceId in fromOtherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormatter.JoinNodes(otherSourceId, transitionId));
+                    stringBuilder.Append(GraphvizFormatter.JoinNodes(fromOtherSourceId, toTransitionId));
                 }
             }
 
             return new Result
             {
-                stateGraphText = Graphviz.StateGraphGenerator.GenerateStateGraph(codeAnalyzeResult, "TODO"),
                 stateGraphWithTransitionsText =
                     GraphvizFormatter.FormatDigraph("Root", "", stringBuilder.ToString())
             };
@@ -134,10 +143,12 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
         static string CreateTransitionNode(string transitionId, string color = GraphvizFormatter.Color.White)
         {
-            return GraphvizFormatter.FormatNode(transitionId,
+            return GraphvizFormatter.FormatNode(
+                transitionId,
                 nodeLabel: SourceNameHelper.GetSourceName(transitionId),
                 color: color,
-                shapeType: GraphvizFormatter.ShapeType.Rect);
+                shapeType: GraphvizFormatter.ShapeType.Rect
+            );
         }
     }
 }
