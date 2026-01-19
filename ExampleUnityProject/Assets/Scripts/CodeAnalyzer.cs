@@ -49,22 +49,29 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationTransitionSourcesByTransition =
                 GetCreationSymbolSourcesBySymbol(semanticModel, objectCreationExpressionSyntaxes, transitionSymbols);
 
-            Dictionary<ISymbol, HashSet<ISymbol>> fromTransitionToStateByState =
-                FilterValuesByPredicate(stateSymbols, creationStateSourcesByState,
-                    allSymbolSourcesFilter: symbol => transitionSymbols.Contains(symbol));
+            Dictionary<ISymbol, HashSet<ISymbol>> fromTransitionToStateByState = FilterValuesByPredicate(
+                stateSymbols,
+                creationStateSourcesByState,
+                allSymbolSourcesFilter: symbol => transitionSymbols.Contains(symbol)
+            );
 
-            Dictionary<ISymbol, HashSet<ISymbol>> fromOtherSourceToStateByState =
-                FilterValuesByPredicate(stateSymbols, creationStateSourcesByState,
-                    allSymbolSourcesFilter: symbol => !transitionSymbols.Contains(symbol));
+            Dictionary<ISymbol, HashSet<ISymbol>> fromOtherSourceToStateByState = FilterValuesByPredicate(
+                stateSymbols,
+                creationStateSourcesByState,
+                allSymbolSourcesFilter: symbol => !transitionSymbols.Contains(symbol)
+            );
 
-            Dictionary<ISymbol, HashSet<ISymbol>> fromStateToTransitionByTransition =
-                FilterValuesByPredicate(transitionSymbols, creationTransitionSourcesByTransition,
-                    allSymbolSourcesFilter: symbol => stateSymbols.Contains(symbol));
+            Dictionary<ISymbol, HashSet<ISymbol>> fromStateToTransitionByTransition = FilterValuesByPredicate(
+                transitionSymbols,
+                creationTransitionSourcesByTransition,
+                allSymbolSourcesFilter: symbol => stateSymbols.Contains(symbol)
+            );
 
-            Dictionary<ISymbol, HashSet<ISymbol>> fromOtherSourceToTransitionByTransition =
-                FilterValuesByPredicate(transitionSymbols, creationTransitionSourcesByTransition,
-                    allSymbolSourcesFilter: symbol => !stateSymbols.Contains(symbol));
-
+            Dictionary<ISymbol, HashSet<ISymbol>> fromOtherSourceToTransitionByTransition = FilterValuesByPredicate(
+                transitionSymbols,
+                creationTransitionSourcesByTransition,
+                allSymbolSourcesFilter: symbol => !stateSymbols.Contains(symbol)
+            );
 
             return new Result
             {
@@ -82,11 +89,13 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             Func<ISymbol, bool> allSymbolSourcesFilter)
         {
             return targetSymbols
-               .ToDictionary(targetSymbol => targetSymbol,
+               .ToDictionary(
+                    targetSymbol => targetSymbol,
                     stateSymbol => allSymbolSourcesByTargetSymbol[stateSymbol]
                        .Where(s => allSymbolSourcesFilter(s))
                        .ToHashSet(SymbolEqualityComparer.Default),
-                    SymbolEqualityComparer.Default);
+                    SymbolEqualityComparer.Default
+                );
         }
 
         static Dictionary<string, HashSet<string>> ConvertSymbolsToNames(Dictionary<ISymbol, HashSet<ISymbol>> source)
