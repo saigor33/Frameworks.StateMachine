@@ -163,18 +163,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             CodeAnalyzer.Result codeAnalyzeResult =
                 CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
 
-            // generate text
-
-            string sateGraphText = string.Join("\n",
-                codeAnalyzeResult.fromStateToTransitionByTransition.Select(kv =>
-                {
-                    (string transitionId, HashSet<string> stateIds) = kv;
-                    return string.Join("\n", stateIds.Select(stateId => $"{stateId} -> {transitionId}"));
-                }));
-
             GraphvizStateGraphGenerator.Result stateGraphResult = GraphvizStateGraphGenerator.Build(codeAnalyzeResult);
 
-            _sateGraphText = sateGraphText;
+            _sateGraphText = stateGraphResult.stateGraphText;
             _sateGraphWithTransitionsText = stateGraphResult.stateGraphWithTransitionsText;
         }
     }
