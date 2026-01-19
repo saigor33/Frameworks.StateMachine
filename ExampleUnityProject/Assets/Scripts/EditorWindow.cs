@@ -180,71 +180,6 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         }
     }
 
-    static class GraphvizFormater
-    {
-        public static class ShapeType
-        {
-            public const string Rect = "rect";
-            public const string Ellipse = "ellipse";
-        }
-
-        public static class Color
-        {
-            public const string Lightgrey = "lightgrey";
-            public const string White = "white";
-            public const string Red = "red";
-            public const string Yellow = "yellow";
-        }
-
-        public static class Style
-        {
-            public const string Filled = "filled";
-        }
-
-        public static string FormatDigraph(string id, string label, string nodes)
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("digraph G");
-            stringBuilder.AppendLine("{");
-            stringBuilder.AppendLine(FormateLineIndentation($"label = \"{label}\""));
-            stringBuilder.AppendLine(FormateLineIndentation(nodes));
-            stringBuilder.AppendLine("}");
-
-            return stringBuilder.ToString();
-        }
-
-        public static string FormatSubgraph(string label, string nodes, string style = Style.Filled,
-            string color = Color.Lightgrey)
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine($"subgraph cluster_{label}");
-            stringBuilder.AppendLine("{");
-            stringBuilder.AppendLine(FormateLineIndentation($"style={style}"));
-            stringBuilder.AppendLine(FormateLineIndentation($"color={color}"));
-            stringBuilder.AppendLine(FormateLineIndentation($"label={label}"));
-            stringBuilder.AppendLine(FormateLineIndentation(nodes));
-            stringBuilder.AppendLine("}");
-
-            return stringBuilder.ToString();
-        }
-
-        public static string FormatNode(string nodeId, string nodeLabel, string shapeType = ShapeType.Ellipse,
-            string color = Color.White, string style = Style.Filled)
-        {
-            return $"\"{nodeId}\" [label=\"{nodeLabel}\" shape=\"{shapeType}\" color=\"{color}\" style=\"{style}\"]";
-        }
-
-        public static string JoinNodes(string fromNodeId, string toNodeId)
-        {
-            return $"\"{fromNodeId}\" -> \"{toNodeId}\"";
-        }
-
-        static string FormateLineIndentation(string text)
-        {
-            return $"\t{text.Replace("\n", "\n\t")}";
-        }
-    }
-
     static class StateGraphBuild
     {
         public class Result
@@ -304,7 +239,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 bool isTransitionNodeCreated = createdTransitionIds.Contains(transitionId);
                 if (!isTransitionNodeCreated)
                 {
-                    string notUsedTransitionNode = CreateTransitionNode(transitionId, GraphvizFormater.Color.Yellow);
+                    string notUsedTransitionNode = CreateTransitionNode(transitionId, GraphvizFormatter.Color.Yellow);
                     stringBuilder.AppendLine(notUsedTransitionNode);
                 }
             }
@@ -313,7 +248,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             {
                 foreach (string transitionId in transitionIds)
                 {
-                    stringBuilder.AppendLine(GraphvizFormater.JoinNodes(transitionId, stateId));
+                    stringBuilder.AppendLine(GraphvizFormatter.JoinNodes(transitionId, stateId));
                 }
             }
 
@@ -326,10 +261,10 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             foreach (string otherSourceId in allOtherSourceIds)
             {
                 stringBuilder.AppendLine(
-                    GraphvizFormater.FormatNode(
+                    GraphvizFormatter.FormatNode(
                         nodeId: otherSourceId,
                         nodeLabel: GetSourceName(otherSourceId),
-                        color: GraphvizFormater.Color.Yellow
+                        color: GraphvizFormatter.Color.Yellow
                     ));
             }
 
@@ -337,7 +272,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             {
                 foreach (string otherSourceId in otherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormater.JoinNodes(otherSourceId, stateId));
+                    stringBuilder.Append(GraphvizFormatter.JoinNodes(otherSourceId, stateId));
                 }
             }
 
@@ -346,7 +281,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             {
                 foreach (string otherSourceId in otherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormater.JoinNodes(otherSourceId, transitionId));
+                    stringBuilder.Append(GraphvizFormatter.JoinNodes(otherSourceId, transitionId));
                 }
             }
 
@@ -354,7 +289,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             {
                 stateGraphGraphvizText = "",
                 stateGraphWithTransitionsGraphvizText =
-                    GraphvizFormater.FormatDigraph("Root", "", stringBuilder.ToString())
+                    GraphvizFormatter.FormatDigraph("Root", "", stringBuilder.ToString())
             };
         }
 
@@ -362,23 +297,23 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         {
             var stateStringBuild = new StringBuilder();
 
-            stateStringBuild.AppendLine(GraphvizFormater.FormatNode(stateId, "State"));
+            stateStringBuild.AppendLine(GraphvizFormatter.FormatNode(stateId, "State"));
 
             foreach (string transitionId in transitionIds)
             {
                 stateStringBuild.AppendLine(CreateTransitionNode(transitionId));
-                stateStringBuild.AppendLine(GraphvizFormater.JoinNodes(stateId, transitionId));
+                stateStringBuild.AppendLine(GraphvizFormatter.JoinNodes(stateId, transitionId));
             }
 
-            return GraphvizFormater.FormatSubgraph(GetSourceName(stateId), nodes: $"{stateStringBuild}");
+            return GraphvizFormatter.FormatSubgraph(GetSourceName(stateId), nodes: $"{stateStringBuild}");
         }
 
-        static string CreateTransitionNode(string transitionId, string color = GraphvizFormater.Color.White)
+        static string CreateTransitionNode(string transitionId, string color = GraphvizFormatter.Color.White)
         {
-            return GraphvizFormater.FormatNode(transitionId,
+            return GraphvizFormatter.FormatNode(transitionId,
                 nodeLabel: GetSourceName(transitionId),
                 color: color,
-                shapeType: GraphvizFormater.ShapeType.Rect);
+                shapeType: GraphvizFormatter.ShapeType.Rect);
         }
 
         static string GetSourceName(string sourceId)
