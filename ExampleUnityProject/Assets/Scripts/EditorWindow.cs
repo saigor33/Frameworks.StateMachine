@@ -10,6 +10,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
     {
         class EnumOption
         {
+            public bool enabled;
             public int selectedIndex;
             public Type[] types;
             public string[] typeFullNames;
@@ -35,7 +36,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         void OnEnable()
         {
             Type baseStateType = typeof(BaseState<>);
-            Type baseTransitionType = typeof(BaseTransition<>); // remove select transition?
+            Type baseTransitionType = typeof(BaseTransition<>);
             Type baseTransitionWithContextType = typeof(BaseTransition<,>);
 
             Type[] assemblyTypes = AppDomain
@@ -52,7 +53,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             Type[] inheritBaseStateTypes = TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseStateType);
             _inheritBaseStateEnumOption = new EnumOption
             {
-                selectedIndex = 0, // todo: array can be empty
+                enabled = true,
+                selectedIndex = 0,
                 types = inheritBaseStateTypes,
                 typeFullNames = inheritBaseStateTypes
                    .Select(t => t.FullName)
@@ -63,7 +65,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseTransitionType);
             _inheritBaseTransitionEnumOption = new EnumOption
             {
-                selectedIndex = 0, // todo: array can be empty
+                enabled = inheritBaseTransitionTypes.Length > 0,
+                selectedIndex = 0,
                 types = inheritBaseTransitionTypes,
                 typeFullNames = inheritBaseTransitionTypes
                    .Select(t => t.FullName)
@@ -76,7 +79,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             );
             _inheritBaseTransitionWithContextEnumOption = new EnumOption
             {
-                selectedIndex = 0, // todo: array can be empty
+                enabled = inheritBaseTransitionWithContextTypes.Length > 0,
+                selectedIndex = 0,
                 types = inheritBaseTransitionWithContextTypes,
                 typeFullNames = inheritBaseTransitionWithContextTypes
                    .Select(t => t.FullName)
@@ -87,18 +91,23 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
         void OnGUI()
         {
+            if (_inheritBaseTransitionEnumOption.types.Length < 1)
+            {
+                GUILayout.Label("BaseState implementation not exists. Create class with inherit BaseState type.");
+                return;
+            }
+
             GUILayout.BeginVertical();
             GUILayout.Space(5);
 
-            DrawSelectFolderPath();
+            DrawSelectSourceCodeDirectoryPath();
 
             GUILayout.Space(5);
 
-            DrawSelectionState();
-            DrawSelectionTransition();
-            DrawSelectionTransitionWithContext();
+            DrawSelectionType("BaseState type", _inheritBaseStateEnumOption);
+            DrawSelectionType("BaseTransition type", _inheritBaseTransitionEnumOption);
+            DrawSelectionType("BaseTransitionWithContext type", _inheritBaseTransitionWithContextEnumOption);
 
-            // todo: add option "not all select transition"
             GUILayout.Space(5);
 
             _needVisualizeTransitions = EditorGUILayout.Toggle("Need visualize transitions", _needVisualizeTransitions);
@@ -115,7 +124,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.EndVertical();
         }
 
-        void DrawSelectFolderPath()
+        void DrawSelectSourceCodeDirectoryPath()
         {
             GUILayout.BeginHorizontal();
 
@@ -123,8 +132,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             if (GUILayout.Button("Select", GUILayout.Width(100)))
             {
-                _sourceCodeDirectoryPath =
-                    EditorUtility.OpenFolderPanel("Select source code folder", Application.dataPath, "");
+                string panelTitle = "Select source code folder";
+                _sourceCodeDirectoryPath = EditorUtility.OpenFolderPanel(panelTitle, Application.dataPath, "");
             }
 
             EditorGUI.BeginDisabledGroup(true);
@@ -138,9 +147,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
         void DrawGenerationResult()
         {
-            _generationResultScrollPosition = GUILayout.BeginScrollView(
-                _generationResultScrollPosition
-            );
+            _generationResultScrollPosition = GUILayout.BeginScrollView(_generationResultScrollPosition);
 
             GUILayout.BeginHorizontal();
 
@@ -158,44 +165,20 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.EndScrollView();
         }
 
-        void DrawSelectionState()
+        void DrawSelectionType(string labelText, EnumOption enumOption)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label("BaseState type", GUILayout.Width(400));
+            enumOption.enabled = EditorGUILayout.Toggle("", enumOption.enabled, GUILayout.Width(15));
 
-            _inheritBaseStateEnumOption.selectedIndex = EditorGUILayout.Popup(
-                _inheritBaseStateEnumOption.selectedIndex,
-                _inheritBaseStateEnumOption.typeFullNames
-            );
+            EditorGUI.BeginDisabledGroup(!enumOption.enabled);
+            GUILayout.Label(labelText, GUILayout.Width(400));
+            if (enumOption.enabled)
+            {
+                enumOption.selectedIndex = EditorGUILayout.Popup(enumOption.selectedIndex, enumOption.typeFullNames);
+            }
 
-            GUILayout.EndHorizontal();
-        }
-
-        void DrawSelectionTransition()
-        {
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("BaseTransition type", GUILayout.Width(400));
-
-            _inheritBaseTransitionEnumOption.selectedIndex = EditorGUILayout.Popup(
-                _inheritBaseTransitionEnumOption.selectedIndex,
-                _inheritBaseTransitionEnumOption.typeFullNames
-            );
-
-            GUILayout.EndHorizontal();
-        }
-
-        void DrawSelectionTransitionWithContext()
-        {
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("BaseTransitionWithContext type", GUILayout.Width(400));
-
-            _inheritBaseTransitionWithContextEnumOption.selectedIndex = EditorGUILayout.Popup(
-                _inheritBaseTransitionWithContextEnumOption.selectedIndex,
-                _inheritBaseTransitionWithContextEnumOption.typeFullNames
-            );
+            EditorGUI.EndDisabledGroup();
 
             GUILayout.EndHorizontal();
         }
@@ -205,20 +188,31 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             static Type GetSelectedType(EnumOption enumOption) => enumOption.types[enumOption.selectedIndex];
 
             Type selectedBaseStateType = GetSelectedType(_inheritBaseStateEnumOption);
-            Type selectedBaseTransitionType = GetSelectedType(_inheritBaseTransitionEnumOption);
-            Type selectedBaseTransitionWitchContextType = GetSelectedType(_inheritBaseTransitionWithContextEnumOption);
-
             Type[] inheritSelectedBaseStateTypes = TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseStateType);
-            Type[] inheritSelectedTransitionTypes = new[]
-                {
-                    TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseTransitionType),
-                    TypesHelpers.GetInheritGenericTypes(_assemblyTypes, selectedBaseTransitionWitchContextType)
-                }
-               .SelectMany(t => t)
-               .ToArray();
+
+            var inheritSelectedTransitionTypes = new List<Type>();
+
+            if (_inheritBaseTransitionEnumOption.enabled)
+            {
+                Type selectedBaseTransitionType = GetSelectedType(_inheritBaseTransitionEnumOption);
+                Type[] inheritTypes = TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseTransitionType);
+                inheritSelectedTransitionTypes.AddRange(inheritTypes);
+            }
+
+            if (_inheritBaseTransitionWithContextEnumOption.enabled)
+            {
+                Type selectedBaseTransitionWithContextType =
+                    GetSelectedType(_inheritBaseTransitionWithContextEnumOption);
+                Type[] inheritTypes = TypesHelpers.GetInheritGenericTypes(
+                    _assemblyTypes,
+                    selectedBaseTransitionWithContextType
+                );
+
+                inheritSelectedTransitionTypes.AddRange(inheritTypes);
+            }
 
             CodeAnalyzer.Result codeAnalyzeResult =
-                CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes);
+                CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes.ToArray());
 
             HashSet<string> allSourceIds = new Dictionary<string, HashSet<string>>()
                .Concat(codeAnalyzeResult.fromStateToTransitionByTransition)
