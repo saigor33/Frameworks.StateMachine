@@ -20,12 +20,10 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             public Dictionary<string, HashSet<string>> fromOtherSourceToTransitionByTransition;
         }
 
-        public static Result Analyze(Type[] inheritBaseStateTypes, Type[] inheritBaseTransitionTypes)
+        public static Result Analyze(Type[] inheritBaseStateTypes, Type[] inheritBaseTransitionTypes,
+            string sourceCodePath)
         {
-            string rootDirectoryPath =
-                @"C:\MyFolder\Projects\Frameworks\StateMachine\ExampleUnityProject\Assets\Scripts\Match";
-
-            string[] cSharpFilePaths = Directory.GetFiles(rootDirectoryPath, "*.cs", SearchOption.AllDirectories);
+            string[] cSharpFilePaths = Directory.GetFiles(sourceCodePath, "*.cs", SearchOption.AllDirectories);
             string sourceCode = string.Join("\n", cSharpFilePaths.Select(File.ReadAllText));
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);

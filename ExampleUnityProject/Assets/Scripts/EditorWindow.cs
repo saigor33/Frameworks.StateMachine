@@ -218,6 +218,12 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         {
             static Type GetSelectedType(EnumOption enumOption) => enumOption.types[enumOption.selectedIndex];
 
+            if (string.IsNullOrEmpty(_sourceCodeDirectoryPath))
+            {
+                Debug.LogWarning("Source code directory path is empty.");
+                return;
+            }
+
             Type selectedBaseStateType = GetSelectedType(_inheritBaseStateEnumOption);
             Type[] inheritSelectedBaseStateTypes = TypesHelpers.GetInheritTypes(_assemblyTypes, selectedBaseStateType);
 
@@ -242,8 +248,11 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 inheritSelectedTransitionTypes.AddRange(inheritTypes);
             }
 
-            CodeAnalyzer.Result codeAnalyzeResult =
-                CodeAnalyzer.Analyze(inheritSelectedBaseStateTypes, inheritSelectedTransitionTypes.ToArray());
+            CodeAnalyzer.Result codeAnalyzeResult = CodeAnalyzer.Analyze(
+                inheritSelectedBaseStateTypes,
+                inheritSelectedTransitionTypes.ToArray(),
+                _sourceCodeDirectoryPath
+            );
 
             HashSet<string> allSourceIds = new Dictionary<string, HashSet<string>>()
                .Concat(codeAnalyzeResult.fromStateToTransitionByTransition)
