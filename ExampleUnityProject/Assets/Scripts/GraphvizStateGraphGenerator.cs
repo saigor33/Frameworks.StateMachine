@@ -12,17 +12,19 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             public string stateGraphWithTransitionsText;
         }
 
-        public static Result Build(CodeAnalyzer.Result codeAnalyzer)
+        public static Result Build(CodeAnalyzer.Result codeAnalyzeResult)
         {
-            string commonSubname = GetCommonSubstring(codeAnalyzer.fromStateToTransitionByTransition);
-            commonSubname = GetCommonSubstring(codeAnalyzer.fromTransitionToStateByState, commonSubname);
-            commonSubname = GetCommonSubstring(codeAnalyzer.fromOtherSourceToTransitionByTransition, commonSubname);
-            commonSubname = GetCommonSubstring(codeAnalyzer.fromOtherSourceToStateByState, commonSubname);
+            string commonSubname = GetCommonSubstring(codeAnalyzeResult.fromStateToTransitionByTransition);
+            commonSubname = GetCommonSubstring(codeAnalyzeResult.fromTransitionToStateByState, commonSubname);
+            commonSubname =
+                GetCommonSubstring(codeAnalyzeResult.fromOtherSourceToTransitionByTransition, commonSubname);
+            commonSubname = GetCommonSubstring(codeAnalyzeResult.fromOtherSourceToStateByState, commonSubname);
 
             var stringBuilder = new StringBuilder();
 
             var fromStateToTransitionByState = new Dictionary<string, HashSet<string>>();
-            foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzer.fromStateToTransitionByTransition)
+            foreach ((string transitionId, HashSet<string> stateIds) in codeAnalyzeResult
+               .fromStateToTransitionByTransition)
             {
                 foreach (string stateId in stateIds)
                 {
@@ -44,7 +46,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 stringBuilder.AppendLine(CreateStateWithTransitionsNode(stateId, transitionIds));
             }
 
-            foreach (string stateId in codeAnalyzer.states)
+            foreach (string stateId in codeAnalyzeResult.states)
             {
                 bool isStateNodeCreated = fromStateToTransitionByState.ContainsKey(stateId);
                 if (!isStateNodeCreated)
@@ -55,7 +57,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-            foreach (string transitionId in codeAnalyzer.transitions)
+            foreach (string transitionId in codeAnalyzeResult.transitions)
             {
                 bool isTransitionNodeCreated = createdTransitionIds.Contains(transitionId);
                 if (!isTransitionNodeCreated)
@@ -65,7 +67,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-            foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzer.fromTransitionToStateByState)
+            foreach ((string stateId, HashSet<string> transitionIds) in codeAnalyzeResult.fromTransitionToStateByState)
             {
                 foreach (string transitionId in transitionIds)
                 {
@@ -74,8 +76,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             }
 
             HashSet<string> allOtherSourceIds = new Dictionary<string, HashSet<string>>()
-               .Concat(codeAnalyzer.fromOtherSourceToStateByState)
-               .Concat(codeAnalyzer.fromOtherSourceToTransitionByTransition)
+               .Concat(codeAnalyzeResult.fromOtherSourceToStateByState)
+               .Concat(codeAnalyzeResult.fromOtherSourceToTransitionByTransition)
                .SelectMany(kv => kv.Value)
                .ToHashSet();
 
@@ -89,7 +91,8 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                     ));
             }
 
-            foreach ((string stateId, HashSet<string> otherSourceIds) in codeAnalyzer.fromOtherSourceToStateByState)
+            foreach ((string stateId, HashSet<string> otherSourceIds) in
+                codeAnalyzeResult.fromOtherSourceToStateByState)
             {
                 foreach (string otherSourceId in otherSourceIds)
                 {
@@ -97,7 +100,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                 }
             }
 
-            foreach ((string transitionId, HashSet<string> otherSourceIds) in codeAnalyzer
+            foreach ((string transitionId, HashSet<string> otherSourceIds) in codeAnalyzeResult
                .fromOtherSourceToTransitionByTransition)
             {
                 foreach (string otherSourceId in otherSourceIds)
