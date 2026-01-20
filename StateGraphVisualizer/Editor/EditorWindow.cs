@@ -106,16 +106,14 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.BeginVertical();
             GUILayout.Space(5);
 
-            DrawSelectSourceCodeDirectoryPath();
-
-            GUILayout.Space(5);
-
             DrawSelectionType("BaseState type", _inheritBaseStateEnumOption);
             DrawSelectionType("BaseTransition type", _inheritBaseTransitionEnumOption);
             DrawSelectionType("BaseTransitionWithContext type", _inheritBaseTransitionWithContextEnumOption);
 
             GUILayout.Space(5);
+            DrawSelectSourceCodeDirectoryPath();
 
+            GUILayout.Space(5);
             _needVisualizeTransitions = EditorGUILayout.Toggle("Need visualize transitions", _needVisualizeTransitions);
 
             GUILayout.Space(5);
@@ -131,6 +129,24 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             DrawVisualEditorsToShowing();
 
             GUILayout.EndVertical();
+        }
+
+        void DrawSelectionType(string labelText, EnumOption enumOption)
+        {
+            GUILayout.BeginHorizontal();
+
+            enumOption.enabled = EditorGUILayout.Toggle("", enumOption.enabled, GUILayout.Width(15));
+
+            EditorGUI.BeginDisabledGroup(!enumOption.enabled);
+            GUILayout.Label(labelText, GUILayout.Width(400));
+            if (enumOption.enabled)
+            {
+                enumOption.selectedIndex = EditorGUILayout.Popup(enumOption.selectedIndex, enumOption.typeFullNames);
+            }
+
+            EditorGUI.EndDisabledGroup();
+
+            GUILayout.EndHorizontal();
         }
 
         void DrawSelectSourceCodeDirectoryPath()
@@ -154,28 +170,6 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.EndHorizontal();
         }
 
-        void DrawVisualEditorsToShowing()
-        {
-            GUILayout.BeginVertical();
-
-            GUILayout.Label("Visual editors to showing graphviz code:");
-
-            foreach (string visualEditorsToShowingUrl in VisualEditorsToShowingUrls)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(visualEditorsToShowingUrl, GUILayout.Width(250));
-                if (GUILayout.Button("Open", GUILayout.Width(50)))
-                {
-                    Application.OpenURL(visualEditorsToShowingUrl);
-                }
-
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-            }
-
-            GUILayout.EndVertical();
-        }
-
         void DrawGenerationResult()
         {
             _generationResultScrollPosition = GUILayout.BeginScrollView(_generationResultScrollPosition);
@@ -196,22 +190,26 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             GUILayout.EndScrollView();
         }
 
-        void DrawSelectionType(string labelText, EnumOption enumOption)
+        void DrawVisualEditorsToShowing()
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical();
 
-            enumOption.enabled = EditorGUILayout.Toggle("", enumOption.enabled, GUILayout.Width(15));
+            GUILayout.Label("Visual editors to showing graphviz code:");
 
-            EditorGUI.BeginDisabledGroup(!enumOption.enabled);
-            GUILayout.Label(labelText, GUILayout.Width(400));
-            if (enumOption.enabled)
+            foreach (string visualEditorsToShowingUrl in VisualEditorsToShowingUrls)
             {
-                enumOption.selectedIndex = EditorGUILayout.Popup(enumOption.selectedIndex, enumOption.typeFullNames);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(visualEditorsToShowingUrl, GUILayout.Width(250));
+                if (GUILayout.Button("Open", GUILayout.Width(50)))
+                {
+                    Application.OpenURL(visualEditorsToShowingUrl);
+                }
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
             }
 
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
         }
 
         void GenerateGraphvizCode()

@@ -95,7 +95,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
             {
                 foreach (string fromOtherSourceId in fromOtherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormatter.JoinNodes(fromOtherSourceId, toStateId));
+                    stringBuilder.AppendLine(GraphvizFormatter.JoinNodes(fromOtherSourceId, toStateId));
                 }
             }
 
@@ -104,7 +104,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
             {
                 foreach (string fromOtherSourceId in fromOtherSourceIds)
                 {
-                    stringBuilder.Append(GraphvizFormatter.JoinNodes(fromOtherSourceId, toTransitionId));
+                    stringBuilder.AppendLine(GraphvizFormatter.JoinNodes(fromOtherSourceId, toTransitionId));
                 }
             }
 

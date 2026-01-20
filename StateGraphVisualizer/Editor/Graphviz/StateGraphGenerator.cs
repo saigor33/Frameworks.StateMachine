@@ -29,9 +29,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
                 );
             }
 
-            foreach ((string toStateId, HashSet<string> transitionIds) in fromTransitionToStateByState)
+            foreach ((string toStateId, HashSet<string> fromTransitionIds) in fromTransitionToStateByState)
             {
-                foreach (string fromTransitionId in transitionIds)
+                foreach (string fromTransitionId in fromTransitionIds)
                 {
                     if (fromStateToTransitionByTransition.TryGetValue(fromTransitionId,
                         out HashSet<string> fromStateIds))
