@@ -1,0 +1,13 @@
+{
+  "name": "com.saigor33.frameworks.statemachine.stategraphvisualizer",
+  "version": "1.0.0",
+  "displayName": "Frameworks.StateMachine.StateGraphVisualizer",
+  "unity": "2019.1",
+  "dependencies": {
+    "com.saigor33.frameworks.statemachine": "1.0.0"
+  },
+  "author": {
+    "name": "saigor33",
+    "url": "https://github.com/saigor33"
+  }
+}

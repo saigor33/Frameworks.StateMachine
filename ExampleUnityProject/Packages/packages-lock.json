@@ -13,6 +13,14 @@
       "source": "local",
       "dependencies": {}
     },
+    "com.saigor33.frameworks.statemachine.stategraphvisualizer": {
+      "version": "file:../../StateGraphVisualizer",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.saigor33.frameworks.statemachine": "1.0.0"
+      }
+    },
     "com.unity.2d.animation": {
       "version": "13.0.2",
       "depth": 0,
