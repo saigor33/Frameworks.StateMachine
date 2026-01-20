@@ -23,6 +23,7 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
+.idea
 
 # NuGetForUnity
 /[Pp]ackages/[Nn]uget-packages/[Ii]nstalledPackages
