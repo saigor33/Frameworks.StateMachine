@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Frameworks.StateMachine.StateGraphVisualizer
 {
-    public static class CommonSubstringFinder
+    public static class StringsHelpers
     {
         public static string GetCommonSubstring(HashSet<string> strings, string commonSubstring = null)
         {

@@ -262,7 +262,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                .SelectMany(kv => new HashSet<string>(kv.Value.Union(new[] { kv.Key })))
                .ToHashSet();
 
-            string stateGraphName = CommonSubstringFinder
+            string stateGraphName = StringsHelpers
                .GetCommonSubstring(allSourceIds)
                .TrimEnd('.');
 
