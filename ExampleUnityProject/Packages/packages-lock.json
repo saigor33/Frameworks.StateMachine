@@ -7,6 +7,12 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
+    "com.saigor33.frameworks.csharpcodeanalysis": {
+      "version": "file:../../Roslyn",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.saigor33.frameworks.statemachine": {
       "version": "file:../../StateMachine",
       "depth": 0,

@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "com.github-glitchenzo.nugetforunity": "4.5.0",
+    "com.saigor33.frameworks.csharpcodeanalysis": "file:../../Roslyn",
     "com.saigor33.frameworks.statemachine": "file:../../StateMachine",
     "com.saigor33.frameworks.statemachine.stategraphvisualizer": "file:../../StateGraphVisualizer",
     "com.unity.2d.animation": "13.0.2",
