@@ -117,7 +117,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
         {
             var stateStringBuild = new StringBuilder();
 
-            stateStringBuild.AppendLine(GraphvizFormatter.FormatNode(stateId, "State"));
+            string stateName = SourceNameHelper.GetSourceName(stateId);
+
+            stateStringBuild.AppendLine(GraphvizFormatter.FormatNode(stateId, stateName));
 
             foreach (string transitionId in transitionIds)
             {
@@ -125,11 +127,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer.Graphviz
                 stateStringBuild.AppendLine(GraphvizFormatter.JoinNodes(stateId, transitionId));
             }
 
-            string stateName = SourceNameHelper.GetSourceName(stateId);
-
             return GraphvizFormatter.FormatSubgraph(
                 id: stateName,
-                label: stateName,
+                label: "",
                 color: GraphvizFormatter.Color.Lightgrey,
                 nodes: $"{stateStringBuild}"
             );
