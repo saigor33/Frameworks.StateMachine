@@ -5,10 +5,10 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 {
     public static class TypesHelpers
     {
-        public static Type[] GetInheritGenericTypes(Type[] types, Type type)
+        public static Type[] GetInheritGenericTypes(Type[] types, Type genericType)
         {
             return types
-               .Where(t => TypesHelpers.IsInheritGenericType(t, type))
+               .Where(t => IsInheritGenericType(t, genericType))
                .ToArray();
         }
 
@@ -19,11 +19,11 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                .ToArray();
         }
 
-        public static bool IsInheritGenericType(Type type, Type baseStateType)
+        public static bool IsInheritGenericType(Type type, Type genericType)
         {
             return type.BaseType != null
                 && type.BaseType.IsGenericType
-                && type.BaseType.GetGenericTypeDefinition() == baseStateType;
+                && type.BaseType.GetGenericTypeDefinition() == genericType;
         }
     }
 }
