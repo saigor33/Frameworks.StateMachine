@@ -24,8 +24,3 @@ ExportedObj/
 *.opendb
 *.VC.db
 .idea
-
-# NuGetForUnity
-/[Pp]ackages/[Nn]uget-packages/[Ii]nstalledPackages
-## Roslyn
-/[Pp]ackages/[Mm]icrosoft.[Cc]ode[Aa]nalysis.[Aa]nalyzers.3.3.3
