@@ -27,9 +27,10 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             string sourceCode = string.Join("\n", cSharpFilePaths.Select(File.ReadAllText));
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+            SyntaxNode syntaxRoot = syntaxTree.GetRoot();
+
             var compilation = CSharpCompilation.Create("MyCompilation", new[] { syntaxTree });
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
-            SyntaxNode syntaxRoot = syntaxTree.GetRoot();
 
             ObjectCreationExpressionSyntax[] objectCreationExpressionSyntaxes = syntaxRoot
                .DescendantNodes()
@@ -44,9 +45,9 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                .Select(t => compilation.GetTypeByMetadataName(t.FullName))
                .ToHashSet(SymbolEqualityComparer.Default);
 
-            Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationStateSourcesByState =
+            Dictionary<ISymbol, HashSet<ISymbol>> creationStateSourcesByState =
                 GetCreationSymbolSourcesBySymbol(semanticModel, objectCreationExpressionSyntaxes, stateSymbols);
-            Dictionary<ISymbol, HashSet<INamedTypeSymbol>> creationTransitionSourcesByTransition =
+            Dictionary<ISymbol, HashSet<ISymbol>> creationTransitionSourcesByTransition =
                 GetCreationSymbolSourcesBySymbol(semanticModel, objectCreationExpressionSyntaxes, transitionSymbols);
 
             Dictionary<ISymbol, HashSet<ISymbol>> fromTransitionToStateByState = FilterValuesByPredicate(
@@ -85,14 +86,14 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         }
 
         static Dictionary<ISymbol, HashSet<ISymbol>> FilterValuesByPredicate(HashSet<ISymbol> targetSymbols,
-            Dictionary<ISymbol, HashSet<INamedTypeSymbol>> allSymbolSourcesByTargetSymbol,
+            Dictionary<ISymbol, HashSet<ISymbol>> allSymbolSourcesByTargetSymbol,
             Func<ISymbol, bool> allSymbolSourcesFilter)
         {
             return targetSymbols
                .ToDictionary(
                     targetSymbol => targetSymbol,
-                    stateSymbol => allSymbolSourcesByTargetSymbol[stateSymbol]
-                       .Where(s => allSymbolSourcesFilter(s))
+                    targetSymbol => allSymbolSourcesByTargetSymbol[targetSymbol]
+                       .Where(allSymbolSourcesFilter)
                        .ToHashSet(SymbolEqualityComparer.Default),
                     SymbolEqualityComparer.Default
                 );
@@ -118,14 +119,14 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             return symbol.ToDisplayString();
         }
 
-        static Dictionary<ISymbol, HashSet<INamedTypeSymbol>> GetCreationSymbolSourcesBySymbol(
-            SemanticModel semanticModel, ObjectCreationExpressionSyntax[] objectCreationExpressionSyntaxes,
+        static Dictionary<ISymbol, HashSet<ISymbol>> GetCreationSymbolSourcesBySymbol(SemanticModel semanticModel,
+            ObjectCreationExpressionSyntax[] objectCreationExpressionSyntaxes,
             HashSet<ISymbol> creationSymbols)
         {
-            Dictionary<ISymbol, HashSet<INamedTypeSymbol>> result = creationSymbols
+            Dictionary<ISymbol, HashSet<ISymbol>> result = creationSymbols
                .ToDictionary(
                     symbol => symbol,
-                    _ => new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default),
+                    _ => new HashSet<ISymbol>(SymbolEqualityComparer.Default),
                     SymbolEqualityComparer.Default
                 );
 
@@ -139,13 +140,12 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                     continue;
                 }
 
-                if (result.TryGetValue(typeInfoTypeSymbol, out HashSet<INamedTypeSymbol> creationStateSources))
+                if (result.TryGetValue(typeInfoTypeSymbol, out HashSet<ISymbol> creationSymbolSources))
                 {
                     ClassDeclarationSyntax sourceClassDeclarationSyntax =
                         GetClassDeclarationSyntax(objectCreationExpressionSyntax);
-                    INamedTypeSymbol sourceNamedTypeSymbol =
-                        semanticModel.GetDeclaredSymbol(sourceClassDeclarationSyntax);
-                    creationStateSources.Add(sourceNamedTypeSymbol);
+                    ISymbol sourceSymbol = semanticModel.GetDeclaredSymbol(sourceClassDeclarationSyntax);
+                    creationSymbolSources.Add(sourceSymbol);
                 }
             }
 
