@@ -4,7 +4,8 @@
   "displayName": "Frameworks.StateMachine.StateGraphVisualizer",
   "unity": "2019.1",
   "dependencies": {
-    "com.saigor33.frameworks.statemachine": "1.0.0"
+    "com.saigor33.frameworks.statemachine": "1.0.0",
+    "org.nuget.microsoft.codeanalysis.csharp": "4.3.1"
   },
   "author": {
     "name": "saigor33",

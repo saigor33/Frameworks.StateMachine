@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "com.github-glitchenzo.nugetforunity": "4.5.0",
-    "com.saigor33.frameworks.csharpcodeanalysis": "file:../../Roslyn",
     "com.saigor33.frameworks.statemachine": "file:../../StateMachine",
     "com.saigor33.frameworks.statemachine.stategraphvisualizer": "file:../../StateGraphVisualizer",
     "com.unity.2d.animation": "13.0.2",
@@ -14,6 +13,7 @@
     "com.unity.test-framework": "1.6.0",
     "com.unity.timeline": "1.8.10",
     "com.unity.ugui": "2.0.0",
+    "org.nuget.microsoft.codeanalysis.csharp": "4.3.1",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
@@ -32,6 +32,13 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.github-glitchenzo.nugetforunity"
+      ]
+    },
+    {
+      "name": "Unity NuGet",
+      "url": "https://unitynuget-registry.openupm.com",
+      "scopes": [
+        "org.nuget"
       ]
     }
   ]
