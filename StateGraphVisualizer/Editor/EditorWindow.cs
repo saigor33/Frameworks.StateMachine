@@ -55,6 +55,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
                .ToArray();
 
             _assemblyTypes = assemblyTypes;
+            _sourceCodeDirectoryPath = Application.dataPath;
 
             Type[] inheritBaseStateTypes = TypesHelpers.GetInheritGenericTypes(allAbstractClassTypes, baseStateType);
             _inheritBaseStateEnumOption = new EnumOption
@@ -152,6 +153,11 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         void DrawSelectSourceCodeDirectoryPath()
         {
             GUILayout.BeginHorizontal();
+
+            if (string.IsNullOrEmpty(_sourceCodeDirectoryPath))
+            {
+                GUILayout.Label("⚠️");
+            }
 
             GUILayout.Label("Select source code directory");
 
