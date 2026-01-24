@@ -32,8 +32,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
         Vector2 _generationResultScrollPosition;
         string _sourceCodeDirectoryPath;
 
-        // [MenuItem("Tools/StateMachine/Visualization")]
-        [MenuItem("Tools/StateMachineVisualization")]
+        [MenuItem("Tools/StateMachine/Visualization")]
         public static void ShowWindow()
         {
             GetWindow<EditorWindow>();
