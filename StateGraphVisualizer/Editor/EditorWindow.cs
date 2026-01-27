@@ -16,7 +16,7 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
             public string[] typeFullNames;
         }
 
-        static readonly string[] VisualEditorsToShowingUrls =
+        static readonly string[] GraphvizVisualEditorUrls =
         {
             "https://www.devtoolsdaily.com/graphviz",
             "https://graph.flyte.org"
@@ -201,13 +201,13 @@ namespace Frameworks.StateMachine.StateGraphVisualizer
 
             GUILayout.Label("Visual editors to showing graphviz code:");
 
-            foreach (string visualEditorsToShowingUrl in VisualEditorsToShowingUrls)
+            foreach (string graphvizVisualEditorUrl in GraphvizVisualEditorUrls)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(visualEditorsToShowingUrl, GUILayout.Width(250));
+                GUILayout.Label(graphvizVisualEditorUrl, GUILayout.Width(250));
                 if (GUILayout.Button("Open", GUILayout.Width(50)))
                 {
-                    Application.OpenURL(visualEditorsToShowingUrl);
+                    Application.OpenURL(graphvizVisualEditorUrl);
                 }
 
                 GUILayout.FlexibleSpace();
